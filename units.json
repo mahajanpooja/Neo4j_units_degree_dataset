@@ -1,0 +1,285 @@
+[
+    {
+      "U_code": "COMP1001",
+      "U_name": "Data Science Fundamentals",
+      "U_cp":6,
+      "U_level": 1000,
+      "U_prohibited":["COMP4001","COMP4002","COMP4003"]
+     },
+     {
+        "U_code": "COMP1002",
+        "U_name": "Python",
+        "U_cp":6,
+        "U_level": 1000,
+        "U_prohibited":  ["COMP3002","COMP4004"]
+     },
+     {
+        "U_code": "COMP1003",
+        "U_name": "Statistics",
+        "U_cp":6,
+        "U_level": 1000
+     },
+     {
+        "U_code": "COMP1004",
+        "U_name": "Business Analytics",
+        "U_cp":6,
+        "U_level": 1000
+     },
+     {
+      "U_code": "COMP2001",
+      "U_name": "Database Systems",
+      "U_cp":6,
+      "U_level": 2000,
+      "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP1002",
+                                       "U_name": "Python"
+                                    },
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP1004",
+                                       "U_name": "Business Analytics"
+                                    }
+                                    ]
+                        }],
+      "U_prohibited":["COMP3003","COMP4004"]
+      }, 
+      {
+         "U_code": "COMP2002",
+         "U_name": "Visual Analytics",
+         "U_cp":6,
+         "U_level": 2000,
+         "U_prerequisites":[{
+          
+                           "Lists": [                                        
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP1004",
+                                       "U_name": "Business Analytics"
+                                    }  
+                                    ]
+                           }]
+      }, 
+      {
+         "U_code": "COMP2003",
+         "U_name": "Mathematics",
+         "U_cp":6,
+         "U_level": 2000
+      },
+      {
+         "U_code": "COMP2004",
+         "U_name": "Big Data",
+         "U_cp":6,
+         "U_level": 2000,
+         "U_prerequisites":[{
+                           "Lists": [               
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP1003",
+                                       "U_name": "Statistics"
+                                    }
+                                 ]
+                           }]
+      },
+      {
+         "U_code": "COMP3001",
+         "U_name": "Machine Learning",
+         "U_cp":6,
+         "U_level": 3000,
+         "U_prerequisites":[{
+                           "Lists": [               
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2002",
+                                       "U_name": "Visual Analytics"
+                                    }
+                                    ]
+                           }]
+      },
+      {
+         "U_code": "COMP3002",
+         "U_name": "Software Engineering",
+         "U_cp":6,
+         "U_level": 3000,
+         "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2001",
+                                       "U_name": "Database Systems"
+                                    },
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2002",
+                                       "U_name": "Visual Analytics"
+                                    }
+                                    ]
+                           },
+                           {
+                           "Lists": [          
+                                    {
+                                       "listid": 2,
+                                       "U_code": "COMP2003",
+                                       "U_name": "Mathematics"
+                                    },
+                                    {
+                                       "listid": 2,
+                                       "U_code": "COMP2004",
+                                       "U_name": "Big Data"
+                                    }  
+                                    ]
+                           }
+                        ]
+      },
+      {
+         "U_code": "COMP3003",
+         "U_name": "Advanced Data Models",
+         "U_cp":6,
+         "U_level": 3000,
+         "U_prerequisites":[{   
+                           "Lists": [            
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2004",
+                                       "U_name": "Big Data"
+                                    }   
+                                    ]
+                              }
+                           ]
+      },
+      {
+         "U_code": "COMP3004",
+         "U_name": "Natural Language Processing",
+         "U_cp":6,
+         "U_level": 3000,
+         "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP1002",
+                                       "U_name": "Python"
+                                    },
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2002",
+                                       "U_name": "Visual Analytics"
+                                    }
+                                    ]
+                              }
+                           ]
+   
+      },
+      {
+         "U_code": "COMP4001",
+         "U_name": "Artificial Intelligence",
+         "U_cp":6,
+         "U_level": 3000,
+         "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2001",
+                                       "U_name": "Database Systems"
+                                    },
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP1004",
+                                       "U_name": "Business Analytics"
+                                    }
+                                    ]
+                           },
+                           {
+                           "Lists": [          
+                                    {
+                                       "listid": 2,
+                                       "U_code": "COMP1002",
+                                       "U_name": "Python"
+                                    },
+                                    {
+                                       "listid": 2,
+                                       "U_code": "COMP3002",
+                                       "U_name": "Software Engineering"
+                                    }  
+                                    ]
+                              }
+                           ]   
+      },
+      {
+         "U_code": "COMP4002",
+         "U_name": "Deep Learning",
+         "U_cp":6,
+         "U_level": 4000,
+         "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP3001",
+                                       "U_name": "Deep Learning"
+                                    }
+                                    ]
+                              }
+                           ]
+      },
+      {
+         "U_code": "COMP4003",
+         "U_name": "Computer Vision",
+         "U_cp":6,
+         "U_level": 4000,
+         "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2004",
+                                       "U_name": "Big Data"
+                                    },
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP3002",
+                                       "U_name": "Software Engineering"
+                                    }
+                                    ]
+                           },
+                           {
+                           "Lists": [          
+                                    {
+                                       "listid": 2,
+                                       "U_code": "COMP2002",
+                                       "U_name": "Visual Analytics"
+                                    },
+                                    {
+                                       "listid": 2,
+                                       "U_code": "COMP2003",
+                                       "U_name": "Mathematics"
+                                    }  
+                                    ]
+                              }
+                           ]   
+      },
+      {
+         "U_code": "COMP4004",
+         "U_name": "Capstone Project",
+         "U_cp":12,
+         "U_level": 4000,
+         "U_prerequisites":[{
+                           "Lists": [
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP2003",
+                                       "U_name": "Mathematics"
+                                    },
+                                    {
+                                       "listid": 1,
+                                       "U_code": "COMP3001",
+                                       "U_name": "Machine Learning"
+                                    }
+                                    ]
+                              }
+                           ]
+                       
+      }
+         
+]
+
+         

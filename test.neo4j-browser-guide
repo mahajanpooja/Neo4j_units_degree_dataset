@@ -1,0 +1,377 @@
+<article class="guide" >
+  <carousel class="deck container-fluid">
+   <slide>
+    <div class="col-sm-3">
+        <h3>Study Graph</h3>
+        <p class="lead">Completion requirements of a degree and it's units</p>
+      </div>
+      <div class="col-sm-9">
+        <p><em>The Study Graph</em>&nbsp;represents units offered in a university and their relationship. 
+        </p>
+        <p>This guide will show the following:</p>
+        <ol class="big">
+          <li>Graph Building</li>
+          <li>Graph Inspection</li>
+          <li>Prohibition Rule</li>
+          <li>Prerequisite Rule</li>
+          <li>Graduation Checking</li>
+          <li>Indirect Prerequisite</li>
+          <li>Foundational Unit</li>
+          <li>Clear the graph</li>
+        </ol>
+      </div>
+   </slide>
+    
+
+  <slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Graph Building</h3>
+      <p>This graph contains units, degrees, and their relationships. There are 3 node labels:
+      <ol class="big">
+          <li><b>Degree:</b> It has two properties including code and name.</li>
+          <li><b>Year_level:</b> This node represents credit points at each year level(eg. 1000, 2000, 3000, 4000). It has two properties including level and credit points required to be completed in first, second, third and fourth year.</li>
+          <li><b>Unit:</b> It has four properties including unique code, name (a descriptive title), level and credit points.</li>
+        </ol>
+<br>
+This graph has 4 relationship types:
+<ol class="big">
+          <li><b>REQUIRES:</b> It connects Degree-[:REQUIRES]->Year_level representing the different level units required at each level year. </li>
+          <li><b>HAS_PREREQUISITES:</b> It connects Unit1-[:HAS_PREREQUISITES]->Unit2 implying that Unit2 is a prerequisite of Unit1.</li>
+          <li><b>PROHIBITED_BY:</b> It connects Unit4-[:PROHIBITED_BY]->Unit3 implying that if a student completes Unit3, then the student cannot enroll in Unit4.</li>
+	<li><b>OR:</b> The units linked by this relationship belong to the same list of prerequisite	such that if Unit_X has 2 prerequisites Unit5-[:OR]->Unit6B then the student should either complete Unit5 or Unit6 in order to enrol for Unit_X. It has one property ‘code’ which is equal to the unit’s code for which this unit is a prerequisite.</li>
+        </ol>
+      </p>
+	  </div>
+	  <div class="col-sm-6">
+      <figure>
+        <pre class="highlight pre-scrollable code runnable">
+CREATE q1=(a:Degree{name:"BAC",code:"BPADVCMP1000"})-[: REQUIRES]->(b1:Year_level{level:1000,credit_points:"48cp"}) 
+CREATE q2= (a)-[: REQUIRES]->(b2:Year_level{level:2000,credit_points:"36cp"}) 
+CREATE q3= (a)-[: REQUIRES]->(b3:Year_level{level:3000,credit_points:"36cp"}) 
+CREATE q4= (a)-[: REQUIRES]->(b4:Year_level{level:4000,credit_points:"36cp"}) 
+With q1,q2,q3,q4
+CALL apoc.load.json("file:///units.json")
+YIELD value
+MERGE (p:Unit {code: value.U_code})
+SET p.name = value.U_name, p.level = value.U_level, p.cp = value.U_cp
+WITH p, value, q1,q2,q3,q4
+UNWIND value.U_prohibited AS pro
+MERGE (c:Unit {code: pro})
+MERGE p1=(p)-[:PROHIBITED_BY]->(c)
+WITH p1, q1,q2,q3,q4
+CALL apoc.load.json("file:///units.json")
+YIELD value
+UNWIND value.U_prerequisites as pre
+UNWIND pre.Lists as list
+MATCH (u:Unit), (v:Unit {code:value.U_code})
+WHERE u.code = list.U_code
+MERGE p2=(v)-[r:HAS_PREREQUISITES]->(u)
+WITH p1, p2, q1,q2,q3,q4
+CALL apoc.load.json("file:///units.json")
+YIELD value
+UNWIND value.U_prerequisites as pre
+UNWIND pre.Lists as list1
+UNWIND pre.Lists as list2
+MATCH (u1:Unit), (u2:Unit) 
+WHERE list1.U_code > list2.U_code AND u1.code = list1.U_code AND u2.code = list2.U_code
+MERGE p3=(u1)-[r1:OR {code: value.U_code}]->(u2)
+MERGE p4=(u2)-[r2:OR {code: value.U_code}]->(u1)
+WITH p1,p2,p3,p4, q1,q2,q3,q4
+MATCH n=()-->() RETURN n;
+        </pre>
+      </figure>
+      <figcaption>Build an initial graph containing units, degree (Bachelor of Advanced Computing), and their relationships </figcaption> 
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Graph Inspection</h3>
+      <p>The graph contains the following features:</p>
+<ol class="big">
+          <li>Units with no prerequisites: COMP1001, COMP1002, COMP1003, COMP1004, COMP2003</li>
+          <li>Units which have a prohibition list: </li>
+		<ul>
+      		<li>COMP1001 is prohibited by COMP4001, COMP4002, COMP4003</li>
+      		<li>COMP1002 is prohibited by COMP3002, COMP4004</li>
+		<li>COMP2001 is prohibited by COMP3003, COMP4004</li>
+    		</ul>
+          <li>Units having a list of prerequisites units linked by OR operators (Enter one of the units in the form field to verify):</li>
+		<ul>
+      		<li>COMP2001 has prerequisites COMP1002 OR COMP1004</li>
+      		<li>COMP3004 has prerequisites COMP1002 OR COMP2002</li>
+		<li>COMP4004 has prerequisites COMP2003 OR COMP3001</li>
+    		</ul>
+          <li>Units having a list of prerequisites units linked by AND and OR operators (Enter one of the units in the form field to verify)</li>
+                 <ul>       
+                 <li>COMP3002 has prerequisites(COMP2001 OR COMP2002) AND (COMP2003 OR COMP2004)</li>
+      		<li>COMP4001 has prerequisites(COMP2001 OR COMP1004) AND (COMP1002 OR COMP3002)</li>
+		<li>COMP4003 has prerequisites(COMP2004 OR COMP3002) AND (COMP2002 OR COMP2003)</li>
+                <ul>
+        </ol>
+    </div>
+
+    <div class="col-sm-6">
+      <figure>
+        <pre class="pre-scrollable code runnable" >
+  MATCH (u:Unit)
+WHERE NOT (u)-[:HAS_PREREQUISITES]->()
+RETURN u;
+        </pre>
+      </figure>
+      <figcaption>Inspect units with no prerequisites </figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable" >
+MATCH p=(u:Unit)-[:PROHIBITED_BY]->() RETURN p; 
+        </pre>
+      </figure>
+      <figcaption>Inspect units with a prohibition list </figcaption>
+<figure>
+<label>Enter unit: </label>
+      <input value-for="p1" id="p1" class="form-control" value="COMP2001" size="15">
+      <br>    
+        <pre class="pre-scrollable code runnable" >
+Match (u:Unit {code:'<span value-key="p1">COMP2001</span>'}),(x:Unit), (y:Unit)
+Match p= (u)-[:HAS_PREREQUISITES]->(x) 
+Match q=(u)-[:HAS_PREREQUISITES]->(y)
+Match r=(x)-[:OR {code:'<span value-key="p1">COMP2001</span>'}]->(y) 
+Match s= (y)-[:OR{code:'<span value-key="p1">COMP2001</span>'}]->(x)
+RETURN p,r,s,q
+        </pre>
+      </figure>
+      <figcaption>Inspect units with prerequisites linked by OR operator/AND-OR operator </figcaption>
+<figure>
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Prohibition Rule</h3>
+     <p>A new node with the label 'student' is built to represent the student's information in the graph. The student has property called name("John"). A new relationship called 'COMPLETED' has been built to connect student node with the units that have been completed eg(COMP2003 and COMP3003) using the first query. The second query checks if John can enrol for two units : COMP1002 and COMP2001. Enter these units in the last form field to verify. A visual justification of the 'true' or 'false' status (as returned by the second query) is provided by the third query. 
+<br>
+<br>
+<label>Enter name of the student: </label>
+      <input value-for="p1" id="p1" class="form-control" value="John" size="15">
+      <br>    
+      <label>Unit-1 completed:</label>
+      <input value-for="p2"  id="p2" class="form-control" value="COMP2003" size="15">
+      <br>
+<label>Unit-2 completed:</label>
+      <input value-for="p3"  id="p3" class="form-control" value="COMP3003" size="15">
+      <br>
+      <label>Enter unit to verify:</label>
+      <input value-for="p4"  id="p4" class="form-control" value="COMP1002" size="15">
+      <br>
+      </p>
+    </div>
+    <div class="col-sm-6">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+  CREATE (student:Student{name: "John"})
+With student
+MATCH (a:Student), (b1:Unit),(b2:Unit)
+WHERE a.name = '<span value-key="p1">John</span>' AND b1.code= '<span value-key="p2">COMP2003</span>' AND b2.code='<span value-key="p3">COMP3003</span>'
+CREATE (a)-[:COMPLETED]->(b1) 
+CREATE (a)-[:COMPLETED]->(b2) 
+RETURN (a)-[:COMPLETED]->(b1), (a)-[:COMPLETED]->(b2);
+        </pre>
+      </figure>
+      <figcaption>Build student information</figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable">
+Match(n:Unit{code:'<span value-key="p4">COMP1002</span>'}), (s:Student{name:'<span value-key="p1">John</span>'})
+Return NOT(exists( (n)-[:PROHIBITED_BY]->()<-[:COMPLETED]->(s))) as status
+        </pre>
+      </figure>
+      <figcaption>Inspect if the student can enrol in the target unit</figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable">
+MATCH(n:Unit{code:'<span value-key="p4">COMP1002</span>'}), (s:Student{name:"John"})
+MATCH p= (n)-[:PROHIBITED_BY]->(x)
+MATCH q= (s)-[:COMPLETED]->(y)
+RETURN p,q
+        </pre>
+      </figure>
+      <figcaption>A visual representation of units completed and the target unit with prohibitions</figcaption>
+    </div>
+  </slide>
+  
+  <slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Prerequisite Rule</h3>
+     <p>The first query, adds a new student information(name = "Jack") along with the units completed (COMP1001, COMP1002, COMP1004). The second query verifies if the student can enrol for 3 units:
+<li>A= COMP2001 </li>
+<li>B= COMP4001 </li>
+<li>C= COMP4003 </li>
+<br>
+Enter these units in the last form field to verify. A visual justification of the 'true' or 'false' status (as returned by the second query) is provided by the third query. 
+<br> 
+<label>Enter name of the student: </label>
+      <input value-for="p1" id="p1" class="form-control" value="Jack" size="15">
+      <br>    
+      <label>Unit-1 completed:</label>
+      <input value-for="p3"  id="p3" class="form-control" value="COMP1001" size="15">
+      <br>
+<label>Unit-2 completed:</label>
+      <input value-for="p4"  id="p4" class="form-control" value="COMP1002" size="15">
+      <br>
+<label>Unit-3 completed:</label>
+      <input value-for="p5"  id="p5" class="form-control" value="COMP1004" size="15">
+      <br>
+      <label>Enter Unit :</label>
+      <input value-for="p2"  id="p2" class="form-control" value="COMP2001" size="15">
+      <br>
+      </p>
+    </div>
+    <div class="col-sm-6">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+CREATE (student:Student{name: '<span value-key="p1">Jack</span>'})
+WITH student
+MATCH (a:Student), (b1:Unit),(b2:Unit),(b3:Unit)
+WHERE a.name = '<span value-key="p1">Jack</span>' AND b1.code= '<span value-key="p3">COMP1001</span>' AND b2.code='<span value-key="p4">COMP1002</span>' AND b3.code='<span value-key="p5">COMP1004</span>'
+CREATE (a)-[:COMPLETED]->(b1) 
+CREATE (a)-[:COMPLETED]->(b2) 
+CREATE (a)-[:COMPLETED]->(b3) 
+RETURN (a)-[:COMPLETED]->(b1), (a)-[:COMPLETED]->(b2), (a)-[:COMPLETED]->(b3) 
+        </pre>
+      </figure>
+      <figcaption>Build student information</figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable">
+Match(n:Unit{code:'<span value-key="p2">COMP2001</span>'}), (s:Student{name:'<span value-key="p1">Jack</span>'})
+Return exists( (n)-[:HAS_PREREQUISITES]->()<-[:COMPLETED]->(s)) as status
+        </pre>
+      </figure>
+      <figcaption>Inspect if the student can enrol in the target unit</figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable">
+Match(n:Unit{code:'<span value-key="p2">COMP2001</span>'}), (s:Student{name:'<span value-key="p1">Jack</span>'})
+Match p= (n)-[:HAS_PREREQUISITES]->(x)
+Match r= (x)-[:OR {code: '<span value-key="p2">COMP2001</span>'}]->()
+Match q= (s)-[:COMPLETED]->(y)
+RETURN p,q,r
+        </pre>
+      </figure>
+      <figcaption>A visual representation of units completed and the target unit with prohibitions</figcaption>
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-4">
+      <h3>Graduation Checking</h3>
+      <p>The first query, adds a new student information(name = "Alex") along with the level units completed in each year ie. 48cp, 24cp, 48cp, 36cp in 1st, 2nd, 3rd and 4th year respectively. The second query verifies if the student has completed the degree’s total credit points requirement. A visual justification of the 'true' or 'false' status (as returned by the second query) is provided by the third query.  
+      </p>
+      <label>Enter name of the student: </label>
+      <input value-for="p1" id="p1" class="form-control" value="Alex" size="15">
+      <br>
+      <br>
+      <label>Enter credits completed at each year level</label>
+      <br>
+      <label>First year:</label>
+      <input value-for="p2"  id="p2" class="form-control" value="48cp" size="15">
+      <br>
+      <label>Second year:</label>
+      <input value-for="p3"  id="p3" class="form-control" value="24cp" size="15">
+      <br>
+      <label>Third year:</label>
+      <input value-for="p4"  id="p4" class="form-control" value="48cp" size="15">
+      <br>
+      <label>Fourth year:</label>
+      <input value-for="p5"  id="p5" class="form-control" value="36cp" size="15">
+    </div>
+    <div class="col-sm-8">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+ CREATE (student:Student{name: '<span value-key="p1">Alex</span>'})
+With student
+MATCH (a:Student), (b1:Year_level),(b4: Year_level)
+WHERE a.name = '<span value-key="p1">Alex</span>' AND b1.level=1000 AND b4.level=4000
+Create p1=(a)-[:COMPLETED]->(b1)
+Create p2=(a)-[:COMPLETED ]->(b2: Year_level{level:2000, credit_points:'<span value-key="p2">24cp</span>'})
+Create p3=(a)-[:COMPLETED ]->(b3: Year_level{level:3000, credit_points:'<span value-key="p3">48cp</span>'})
+Create p4=(a)-[:COMPLETED ]->(b4)
+RETURN p1,p2,p3,p4 
+        </pre>
+      </figure>
+      <figcaption>Build student information</figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable">
+MATCH (a:Degree {name:"BAC",code:"BPADVCMP1000"}),(s:Student{name: '<span value-key="p1">Alex</span>'})
+Return exists( (s)-[:COMPLETED]->(: Year_level{level:1000, credit_points:"48cp"})<-[:REQUIRES]-(a)) as level_1000, exists( (s)-[:COMPLETED]->(: Year_level{level:2000, credit_points:"36cp"})<-[:REQUIRES]-(a)) as level_2000, exists( (s)-[:COMPLETED]->(: Year_level{level:3000, credit_points:"36cp"})<-[:REQUIRES]-(a)) as level_3000, exists( (s)-[:COMPLETED]->(: Year_level{level:4000, credit_points:"36cp"})<-[:REQUIRES]-(a)) as level_4000
+        </pre>
+      </figure>
+      <figcaption>Inspect which year level units are yet to be completed by the student</figcaption>
+<figure>
+        <pre class="pre-scrollable code runnable">
+MATCH (a:Degree {name:"BAC",code:"BPADVCMP1000"}),(s:Student{name: '<span value-key="p1">Alex</span>'})
+Match p1= (s)-[:COMPLETED]->(: Year_level)
+Match p2=(a)-[: REQUIRES]->(: Year_level)
+Return p1, p2
+        </pre>
+      </figure>
+      <figcaption>A visual representation of year level units completed by the student</figcaption>
+   
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-4">
+      <h3>Indirect Prerequisite</h3>
+        <p> The two queries find all 1000 level indirect prerequisite units of a given unit and prints out the prerequisite chain from the unit to the 1000 level indirect prerequisite unit. Target unit COMP3001 is used to represent chain length of 2 and COMP4002 is used to represent chain length of 3 respectively. Enter these units in the form field to verify. 
+      </p>
+      <label>Enter unit: </label>
+      <input value-for="p1" id="p1" class="form-control" value="COMP3001" size="25">
+      <br>
+    </div>
+    <div class="col-sm-8">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+Match p= (n:Unit{code:'<span value-key="p1">COMP3001</span>'})-[:HAS_PREREQUISITES*]->(m:Unit)
+WHERE m.level=1000
+return p
+        </pre>
+      </figure>
+      <figcaption>Inspect indirect prerequisites</figcaption>
+       
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Foundational Unit</h3>
+    <p>The first query finds the unit appearing in most other unit’s direct or indirect prerequisite list. At the top of the result is COMP1004 (Business Analytics) which has occurred 15 times as a prerequisite for different units directly/indirectly followed by COMP2002 (occurred 8 times), COMP1002 (occurred 7 times) and so on.
+    </p>
+    </div>
+    <div class="col-sm-6">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+  MATCH ()-[:HAS_PREREQUISITES*]->(n:Unit)
+RETURN n.code,count(*) as times
+ORDER BY times DESC;
+        </pre>
+      </figure>
+      <figcaption>Unit appearing in most other unit’s prerequisite list </figcaption>
+    
+    </div>
+  </slide>
+
+<slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Clear the Graph</h3>
+    <p>This query deletes all nodes and their relationships in the graph.
+    </p>
+    </div>
+    <div class="col-sm-6">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+ MATCH (n)
+DETACH DELETE n
+        </pre>
+      </figure>
+      <figcaption>Clearing the graph </figcaption>
+   
+    </div>
+  </slide>
+</carousel>
+</article>
