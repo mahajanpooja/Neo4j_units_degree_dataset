@@ -3,15 +3,23 @@ In this project, a graph is built representing units offered in a university and
 be used to check degree and unit rules.
 
 The graph models:
+
 •at least one degree (three or four year) with a set of completion requirements;
+
 •enough units at 1000, 2000, and 3000 or above level to satisfy that degree’s completion requirements (there should be at least three or four units per level);
-some units with no prerequisites;
+
+•some units with no prerequisites;
+
 •some units with a list of prohibition units;
+
 •some units with a list of prerequisite units linked by OR operators;
+
 •some units with two or more prerequisite units linked by OR and AND operators;
+
 •a chain of units linked by two or three prerequisite relationships.
 
-Your guide should have a similar structure. It must contain the following slides:
+The guide must contain the following slides:
+
 • Slide one: Graph Building. In this slide, you should provide one or more queries to build a graph containing units, degrees, and their relationships. You should prepare
 a data file containing units information and load that file to build a graph units information. You may write a separate query to add degree information. In the
 textual description section of this slide, briefly describe the nodes and relationships in the graph.
